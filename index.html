@@ -93,12 +93,12 @@ button{font:inherit;cursor:pointer;border:0;border-radius:4px}
 .timer .fill.low{background:var(--ob)}
 .timer b{font-family:var(--display);font-weight:800;font-size:28px;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
 form{display:flex;gap:8px}
-input[type=text]{flex:1;min-width:0;font:inherit;font-size:18px;padding:13px 12px;border:2px solid var(--ink);border-radius:4px;background:var(--surface);color:var(--ink)}
+input[type=text],input[type=email]{flex:1;min-width:0;font:inherit;font-size:18px;padding:13px 12px;border:2px solid var(--ink);border-radius:4px;background:var(--surface);color:var(--ink)}
 input[type=text]:disabled{opacity:.6}
 form button{background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.05em;text-transform:uppercase;padding:0 18px}
 .acct{background:var(--ink);color:var(--bg);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:5px 10px;white-space:nowrap;max-width:44vw;overflow:hidden;text-overflow:ellipsis}
 .acct{display:inline-flex;align-items:center;gap:6px}
-.acct span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.acct span{min-width:0;overflow:hidden;text-overflow:ellipsis;color:inherit;font-size:inherit;margin-left:0}
 .acct:disabled{opacity:.6}
 .av{border-radius:50%;flex:none;display:block}
 .avpanel{border:1px solid var(--line);border-radius:4px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:14px}
@@ -148,10 +148,15 @@ summary{cursor:pointer;font-weight:600}
 <div class="wrap">
   <div class="brand"><b>Punt &amp; Pin</b><span id="dayTag"></span><button class="snd" id="sndBtn" type="button">Sound on</button><button class="acct" id="acctBtn" type="button">Sign in</button></div>
   <div class="acctpanel" id="acctPanel" hidden><span>Your rounds, streak and best score save to your account and follow you across devices.</span><div class="acctbtns"><button class="snd" id="avEditBtn" type="button">Edit avatar</button><button class="snd" id="signOutBtn" type="button">Sign out</button></div></div>
+  <div class="avpanel" id="siPanel" hidden>
+    <div><h2 style="font-size:26px">Sign in</h2><p class="note">Enter your email and we'll send you a login link. No password needed. New players get an account automatically.</p></div>
+    <form id="siForm"><input type="email" id="emailInput" aria-label="Email address" placeholder="you@example.com" autocomplete="email" required><button type="submit" id="siSend">Send link</button></form>
+  </div>
   <div class="avpanel" id="avPanel" hidden>
-    <div class="avtop"><span id="avPreview"></span><div><h2>Your avatar</h2><p class="note">Shown next to your name on the leaderboard.</p></div></div>
+    <div class="avtop"><span id="avPreview"></span><div><h2>Your player card</h2><p class="note">Your name and avatar show on the leaderboard.</p></div></div>
+    <div class="avrow"><label class="label" for="nameInput">Display name</label><input type="text" id="nameInput" maxlength="20" autocomplete="nickname" placeholder="2 to 20 characters"></div>
     <div id="avRows" style="display:flex;flex-direction:column;gap:12px"></div>
-    <button class="btn" id="avSave" type="button">Save avatar</button>
+    <button class="btn" id="avSave" type="button">Save</button>
   </div>
   <p class="note" id="acctNote" aria-live="polite" hidden></p>
 
@@ -221,6 +226,7 @@ summary{cursor:pointer;font-weight:600}
   </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.97.0"></script>
 <script>
 // Each answer: [name, commonness 1-60 (higher = more obvious), extra accepted spellings]
 const Q=(cat,prompt,a)=>({cat,prompt,a});
@@ -401,8 +407,9 @@ $('homeBtn').addEventListener('click',renderHome);
 function countdown(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1),s=Math.max(0,Math.floor((m-n)/1000));
   const t=[s/3600|0,(s%3600)/60|0,s%60].map(x=>String(x).padStart(2,'0')).join(':');
   document.querySelectorAll('.countdown').forEach(e=>e.textContent=t)}
-// Account: rounds save to the signed-in viewer's private space, merged with this device
-let cloudRef=null,acctName='Account';
+// Account, saved rounds and leaderboard (Supabase)
+const SB_URL='https://xbqllhrgghmwmqklztwv.supabase.co',SB_KEY='sb_publishable_ywLoEZ6Un2UtOWn_PeUjyQ_J6y1DeW5';
+let sb=null,ME=null,PROFILE=null,lastRows=[];
 function acctNote(t){$('acctNote').textContent=t;$('acctNote').hidden=!t}
 // Avatars: built from fixed palettes, stored as four index numbers
 const AV={bg:['#F2C230','#1E6B45','#2B6CB0','#B93A29','#6B4FA0','#12281C','#E8E2D0','#E07A2F'],
@@ -416,73 +423,75 @@ function avSvg(a,size){a=avClean(a);const s='stroke="#000" stroke-opacity=".25" 
     '<ellipse cx="20" cy="43" rx="15" ry="13" fill="'+AV.shirt[a.shirt]+'" '+s+'/><rect x="17" y="25" width="6" height="6" fill="'+AV.skin[a.skin]+'"/>'+
     '<circle cx="20" cy="19" r="8.5" fill="'+AV.skin[a.skin]+'"/><path d="M11.3 17.5a8.7 8.7 0 0 1 17.4 0z" fill="'+AV.cap[a.cap]+'" '+s+'/>'+
     '<rect x="11" y="16.2" width="22" height="2.8" rx="1.4" fill="'+AV.cap[a.cap]+'" '+s+'/></svg>'}
-let avDraft=null;const avCache={};
+let avDraft=null;
 function avDraw(){$('avPreview').innerHTML=avSvg(avDraft,72);const box=$('avRows');box.textContent='';
   AVK.forEach(k=>{const row=document.createElement('div');row.className='avrow';const l=document.createElement('span');l.className='label';l.textContent=AVL[k];
     const sw=document.createElement('div');sw.className='sw';
     AV[k].forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.style.background=c;b.setAttribute('aria-label',AVL[k]+' option '+(i+1));
       b.setAttribute('aria-pressed',String(avDraft[k]===i));b.addEventListener('click',()=>{avDraft[k]=i;avDraw()});sw.appendChild(b)});
     row.append(l,sw);box.appendChild(row)})}
-function openAv(){avDraft=avClean(store.av);avDraw();$('acctPanel').hidden=true;$('avPanel').hidden=false}
-$('avEditBtn').addEventListener('click',openAv);
-$('avSave').addEventListener('click',()=>{store.av=avDraft;save(store);$('avPanel').hidden=true;acctLabel();
-  if(UID)avCache[UID]=avDraft;renderBoard(lastRows);
-  if(DB&&UID&&cloudRef)DB.doc('players/'+UID).set({av:avDraft}).then(()=>acctNote('Avatar saved.'),()=>acctNote('Could not save your avatar just now. Try again in a moment.'))});
-function acctLabel(){const b=$('acctBtn');b.textContent='';if(!cloudRef){b.textContent='Sign in';return}
-  b.insertAdjacentHTML('beforeend',avSvg(store.av,18));const s=document.createElement('span');s.textContent=acctName;b.appendChild(s)}
-function syncUp(){if(!cloudRef)return;
-  cloudRef.set({days:store.days,streak:store.streak||0,last:store.last||0,best:store.best||0})
-    .catch(()=>acctNote('Could not save to your account just now. This round is still saved on this device.'))}
-function merge(c){if(!c)return;store.days=Object.assign({},store.days,c.days||{});store.best=Math.max(store.best||0,c.best||0);
-  const cl=c.last||0,ll=store.last||0;if(cl>ll||(cl===ll&&(c.streak||0)>(store.streak||0))){store.last=cl;store.streak=c.streak||0}}
-async function signIn(quiet){const b=$('acctBtn');b.disabled=true;b.textContent='Signing in…';
-  try{if(!window.claude||!window.claude.use)throw 0;
-    const [user,db]=await Promise.all([window.claude.use('user'),window.claude.use('db')]);
-    const id=user?await user.id():null;if(!db||!id)throw 0;
-    const ref=db.collection('data/users/'+id).doc('long-drive'),snap=await ref.get();
-    merge(snap.exists?snap.data():null);cloudRef=ref;DB=db;UID=id;store.acct=true;save(store);
-    if(store.days[S.day])postScore(store.days[S.day].total);
-    acctName=(await user.me()).name||'Account';
-    try{const pv=await db.doc('players/'+id).get(),d=pv.exists?pv.data():null;
-      if(d&&d.av){store.av=avClean(d.av);save(store)}else if(store.av)db.doc('players/'+id).set({av:avClean(store.av)}).catch(()=>{});
-      if(store.av)avCache[id]=store.av}catch(e){}
-    if(!quiet&&!store.av)openAv();
-    syncUp();acctNote(quiet?'':'Signed in. Your rounds now save to your account.');if(!$('home').hidden)renderHome();
-  }catch(e){cloudRef=null;if(!quiet)acctNote("Sign-in isn't available here. Your rounds are still saved on this device.")}
-  b.disabled=false;acctLabel()}
-$('acctBtn').addEventListener('click',()=>{if(cloudRef)$('acctPanel').hidden=!$('acctPanel').hidden;else signIn(false)});
-$('signOutBtn').addEventListener('click',()=>{cloudRef=null;store.acct=false;save(store);$('acctPanel').hidden=true;$('avPanel').hidden=true;acctLabel();
-  acctNote('Signed out. Rounds save on this device only.')});
-if(store.acct)signIn(true);
+function openAv(){avDraft=avClean(PROFILE?PROFILE.avatar:null);$('nameInput').value=PROFILE?PROFILE.display_name:'';avDraw();
+  $('acctPanel').hidden=true;$('siPanel').hidden=true;$('avPanel').hidden=false}
+function acctLabel(){const b=$('acctBtn');b.textContent='';if(!ME){b.textContent='Sign in';return}
+  b.insertAdjacentHTML('beforeend',avSvg(PROFILE?PROFILE.avatar:null,18));const s=document.createElement('span');s.textContent=PROFILE?PROFILE.display_name:'Finish setup';b.appendChild(s)}
 
-// Clubhouse leaderboard: one score per signed-in player per day, top 10 shown
-let DB=null,UID=null,USER=null,boardSeq=0,lastRows=[];
-async function avFor(id){if(id in avCache)return;avCache[id]=null;try{const d=await DB.doc('players/'+id).get();if(d.exists&&d.data().av)avCache[id]=avClean(d.data().av)}catch(e){}}
+// Streak and best are worked out from the saved rounds
+function recount(){const ds=Object.keys(store.days).map(Number).sort((a,b)=>a-b);if(!ds.length)return;
+  store.best=Math.max(store.best||0,...ds.map(d=>store.days[d].total||0));
+  const last=ds[ds.length-1];let n=1;while(store.days[last-n])n++;store.last=last;store.streak=n;save(store)}
+async function pushRounds(){if(!sb||!ME||!PROFILE)return;
+  const rows=Object.keys(store.days).map(d=>({user_id:ME.id,day:Number(d),total:store.days[d].total,holes:store.days[d].holes}));
+  if(rows.length){const {error}=await sb.from('rounds').upsert(rows,{onConflict:'user_id,day',ignoreDuplicates:true});
+    if(error)acctNote('Could not save to your account just now. Your rounds are still saved on this device.')}
+  loadBoard()}
+function syncUp(){pushRounds()}
+function postScore(){}
+
+async function onAuth(session){const u=session?session.user:null;
+  if(!u){ME=null;PROFILE=null;acctLabel();renderBoard(lastRows);return}
+  if(ME&&ME.id===u.id)return;ME=u;$('siPanel').hidden=true;acctLabel();
+  try{const p=await sb.from('profiles').select('display_name,avatar').eq('id',u.id).maybeSingle();PROFILE=p.data||null;acctLabel();
+    const rs=await sb.from('rounds').select('day,total,holes').eq('user_id',u.id);
+    (rs.data||[]).forEach(r=>{store.days[r.day]={total:r.total,holes:r.holes}});recount();
+    if(!$('home').hidden)renderHome()}catch(e){}
+  if(PROFILE){acctNote('');pushRounds()}else{openAv();acctNote('Choose a display name and avatar to finish setting up.');renderBoard(lastRows)}}
+
+$('acctBtn').addEventListener('click',()=>{if(!ME){$('siPanel').hidden=!$('siPanel').hidden;if(!$('siPanel').hidden)$('emailInput').focus()}
+  else if(!PROFILE)openAv();else{$('avPanel').hidden=true;$('acctPanel').hidden=!$('acctPanel').hidden}});
+$('siForm').addEventListener('submit',async e=>{e.preventDefault();const email=$('emailInput').value.trim();if(!email||!sb)return;
+  const b=$('siSend');b.disabled=true;acctNote('Sending your login link…');
+  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});b.disabled=false;
+  if(error){acctNote('Could not send the login email. Wait a minute and try again.');return}
+  $('siPanel').hidden=true;acctNote('Check your email for a login link, then open it on this device.')});
+$('avEditBtn').addEventListener('click',openAv);
+$('avSave').addEventListener('click',async()=>{if(!ME||!sb)return;const name=$('nameInput').value.trim().replace(/\s+/g,' ');
+  if(!/^[A-Za-z0-9 _-]{2,20}$/.test(name)){acctNote('Display names are 2 to 20 letters, numbers, spaces, hyphens or underscores.');$('nameInput').focus();return}
+  const b=$('avSave');b.disabled=true;const {error}=await sb.from('profiles').upsert({id:ME.id,display_name:name,avatar:avDraft});b.disabled=false;
+  if(error){acctNote(error.code==='23505'?'That name is taken. Try another.':'Could not save just now. Try again in a moment.');return}
+  PROFILE={display_name:name,avatar:avDraft};$('avPanel').hidden=true;acctLabel();acctNote('Saved. Your rounds now save to your account.');pushRounds()});
+$('signOutBtn').addEventListener('click',async()=>{$('acctPanel').hidden=true;$('avPanel').hidden=true;if(sb)await sb.auth.signOut();
+  acctNote('Signed out. Rounds save on this device only.')});
+
+// Clubhouse leaderboard: each player's round for today, top 10
 function boardMsg(t){$('boardMsg').textContent=t;$('boardMsg').hidden=!t}
-function postScore(total){if(!DB||!UID||!cloudRef)return;DB.doc('scores/'+UID).set({day:S.day,total}).catch(()=>{})}
-async function renderBoard(rows){const seq=++boardSeq;lastRows=rows;
-  rows=rows.filter(r=>Number.isFinite(r.total)&&r.total>0&&r.total<=2450).sort((a,b)=>b.total-a.total).slice(0,10);
-  let ps={};try{if(USER&&rows.length)ps=await USER.profiles(rows.map(r=>r.id))}catch(e){}
-  if(DB)await Promise.all(rows.map(r=>avFor(r.id)));
-  if(seq!==boardSeq)return;
-  const ol=$('boardList');ol.textContent='';
-  rows.forEach((r,k)=>{const li=document.createElement('li');if(r.id===UID)li.className='me';
+function renderBoard(rows){lastRows=rows;const ol=$('boardList');ol.textContent='';
+  rows.forEach((r,k)=>{const li=document.createElement('li'),mine=!!ME&&r.id===ME.id;if(mine)li.className='me';
     const a=document.createElement('span'),b=document.createElement('span'),c=document.createElement('span');
-    a.className='r';a.textContent=k+1;b.className='p';b.textContent=((ps[r.id]&&ps[r.id].name)||'Player')+(r.id===UID?' (you)':'');
-    c.className='s';c.textContent=r.total.toLocaleString('en-GB');li.append(a,b,c);
-    a.insertAdjacentHTML('afterend',avSvg(r.id===UID&&store.av?store.av:avCache[r.id],26));ol.appendChild(li)});
+    a.className='r';a.textContent=k+1;b.className='p';b.textContent=(r.name||'Player')+(mine?' (you)':'');
+    c.className='s';c.textContent=Number(r.total).toLocaleString('en-GB');li.append(a,b,c);
+    a.insertAdjacentHTML('afterend',avSvg(r.avatar,26));ol.appendChild(li)});
   ol.hidden=!rows.length;
-  boardMsg(rows.length?'Sign in and finish a round to post your score.':'No scores posted yet today. Sign in and finish a round to go top.')}
-async function initBoard(){
-  try{if(!window.claude||!window.claude.use)throw 0;
-    const db=await window.claude.use('db');if(!db)throw 0;
-    USER=await window.claude.use('user');if(USER&&!UID)UID=await USER.id();DB=DB||db;
-    const timer=setTimeout(()=>boardMsg("Couldn't load today's scores. Reopen the game to try again."),10000);
-    db.collection('scores').where('day','==',S.day).limit(200).onSnapshot(
-      snap=>{clearTimeout(timer);renderBoard(snap.docs.map(d=>({id:d.id,total:(d.data()||{}).total})))},
-      ()=>{clearTimeout(timer);boardMsg("Couldn't load today's scores. Reopen the game to try again.")});
-  }catch(e){boardMsg("Today's scores show here for signed-in players.")}}
-initBoard();
+  boardMsg(rows.length?(ME?'':'Sign in and finish a round to post your score.'):'No scores posted yet today. Sign in and finish a round to go top.')}
+async function loadBoard(){if(!sb)return;
+  const {data,error}=await sb.from('rounds').select('user_id,total,profiles(display_name,avatar)').eq('day',S.day).order('total',{ascending:false}).order('created_at',{ascending:true}).limit(10);
+  if(error){boardMsg("Couldn't load today's scores. Reload the page to try again.");return}
+  renderBoard((data||[]).map(r=>({id:r.user_id,total:r.total,name:r.profiles&&r.profiles.display_name,avatar:r.profiles&&r.profiles.avatar})))}
+try{sb=window.supabase.createClient(SB_URL,SB_KEY);
+  sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>onAuth(session),0)});
+  loadBoard();
+  sb.channel('board').on('postgres_changes',{event:'INSERT',schema:'public',table:'rounds',filter:'day=eq.'+S.day},()=>loadBoard()).subscribe();
+}catch(e){$('acctBtn').hidden=true;boardMsg("Couldn't load today's scores. Reload the page to try again.")}
+
 
 setInterval(countdown,1000);countdown();renderHome();
 </script>
