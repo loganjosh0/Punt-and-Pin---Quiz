@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="The daily golf quiz from Punt &amp; Pin. Seven questions, 25 seconds each. The rarer your answer, the further your drive carries.">
+<meta name="theme-color" content="#1E6B45">
+<style>html{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Punt &amp; Pin Long Drive</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow scorecard column; the driving-range strip is the single loud element. */
+:root{
+  --bg:#EDF3EB; --surface:#FFFFFF; --ink:#12281C; --muted:#586C5F; --line:#C9D7CC;
+  --turf:#1E6B45; --turf-2:#237A4F; --on-turf:#F4F8F2; --flag:#F2C230; --on-flag:#12281C; --ob:#B93A29;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D1C15; --surface:#152B1F; --ink:#E8F0E7; --muted:#9BAFA1; --line:#2A4636;
+  --turf:#1F6E48; --turf-2:#267F54; --on-turf:#F4F8F2; --flag:#F2C230; --on-flag:#12281C; --ob:#EC7663; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0D1C15; --surface:#152B1F; --ink:#E8F0E7; --muted:#9BAFA1; --line:#2A4636;
+  --turf:#1F6E48; --turf-2:#267F54; --on-turf:#F4F8F2; --flag:#F2C230; --on-flag:#12281C; --ob:#EC7663; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+#home{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+@media (min-width:820px){#home{grid-template-columns:minmax(0,1fr) 300px;gap:32px}}
+.homemain{display:flex;flex-direction:column;gap:18px;min-width:0}
+#play,#done{max-width:560px;width:100%;margin-inline:auto}
+.board{border:1px solid var(--line);border-radius:4px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.board h2{font-size:26px}
+.board ol{list-style:none;margin:0;padding:0}
+.board li{display:grid;grid-template-columns:22px 26px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.board .r{font-family:var(--display);font-weight:800;font-size:18px;color:var(--muted)}
+.board .p{overflow-wrap:anywhere}
+.board .s{font-family:var(--display);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.board li.me{background:var(--flag);color:var(--on-flag);margin-inline:-8px;padding-inline:8px;border-radius:3px}
+.board li.me .r{color:var(--on-flag)}
+.board li.me .p{font-weight:600}
+.wrap{max-width:920px;margin:0 auto;padding-block:20px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:20px}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.brand b{font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.06em;text-transform:uppercase}
+.brand{flex-wrap:wrap}
+.brand span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.snd{background:transparent;color:var(--ink);border:1.5px solid var(--line);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:4px 8px;white-space:nowrap}
+section{display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(64px,22vw,112px);line-height:.86;margin:0;text-transform:uppercase;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--turf)}
+h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1.02;margin:0;text-wrap:balance}
+p{margin:0}
+.lede{font-size:17px;max-width:44ch}
+.label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.rules li{padding:10px 0;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:baseline}
+.rules strong{font-family:var(--display);font-size:22px;font-weight:800;min-width:74px}
+
+button{font:inherit;cursor:pointer;border:0;border-radius:4px}
+.btn{background:var(--flag);color:var(--on-flag);font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:.05em;text-transform:uppercase;padding:14px 20px;width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn:active{transform:translateY(1px)}
+:focus-visible{outline:3px solid var(--turf);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row > *{flex:1 1 160px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.stats div{padding:10px 12px;display:flex;flex-direction:column}
+.stats div + div{border-left:1px solid var(--line)}
+.stats b{font-family:var(--display);font-size:30px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+
+/* Driving range */
+.range{position:relative;height:84px;border-radius:4px;overflow:hidden;color:var(--on-turf);
+  background:repeating-linear-gradient(90deg,var(--turf) 0 28px,var(--turf-2) 28px 56px)}
+.range i{position:absolute;top:0;bottom:0;border-left:1px dashed var(--on-turf);opacity:.55}
+.range i::after{content:attr(data-y);position:absolute;top:4px;left:5px;font-family:var(--display);font-weight:800;font-size:15px;font-style:normal}
+.range .tee{position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--flag)}
+.ball{position:absolute;bottom:42px;left:2%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--on-turf);
+  box-shadow:0 0 0 3px var(--turf);transition:left 1.1s cubic-bezier(.2,.7,.2,1)}
+.ball.ob{background:var(--ob)}
+.carry{position:absolute;right:8px;bottom:6px;font-family:var(--display);font-weight:800;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+
+/* Play */
+.holehead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.pips{display:flex;gap:4px}
+.pips span{width:22px;height:6px;border-radius:2px;background:var(--line)}
+.pips span.done{background:var(--turf)} .pips span.now{background:var(--flag)} .pips span.ob{background:var(--ob)}
+.timer{display:flex;align-items:center;gap:10px}
+.timer .track{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.timer .fill{height:100%;width:100%;background:var(--turf);transform-origin:left}
+.timer .fill.low{background:var(--ob)}
+.timer b{font-family:var(--display);font-weight:800;font-size:28px;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
+form{display:flex;gap:8px}
+input[type=text]{flex:1;min-width:0;font:inherit;font-size:18px;padding:13px 12px;border:2px solid var(--ink);border-radius:4px;background:var(--surface);color:var(--ink)}
+input[type=text]:disabled{opacity:.6}
+form button{background:var(--ink);color:var(--bg);font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.05em;text-transform:uppercase;padding:0 18px}
+.acct{background:var(--ink);color:var(--bg);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:5px 10px;white-space:nowrap;max-width:44vw;overflow:hidden;text-overflow:ellipsis}
+.acct{display:inline-flex;align-items:center;gap:6px}
+.acct span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.acct:disabled{opacity:.6}
+.av{border-radius:50%;flex:none;display:block}
+.avpanel{border:1px solid var(--line);border-radius:4px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:14px}
+.avtop{display:flex;gap:14px;align-items:center}
+.avtop h2{font-size:26px}
+.avrow{display:flex;flex-direction:column;gap:6px}
+.sw{display:flex;gap:10px;flex-wrap:wrap}
+.sw button{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);padding:0}
+.sw button[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.acctbtns{display:flex;gap:8px;flex-wrap:wrap}
+.acctpanel{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:4px;background:var(--surface);padding:10px 12px;font-size:14px}
+.acctpanel span{min-width:0;flex:1 1 200px}
+.feedback{min-height:24px;font-weight:500;color:var(--ob)}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.verdict{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.verdict .tag{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;border:1.5px solid currentColor;border-radius:3px;padding:2px 7px}
+.verdict.miss h2,.verdict.miss .tag{color:var(--ob)}
+.facts{font-size:15px;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:600}
+details{border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-weight:600}
+.all{list-style:none;margin:10px 0 0;padding:0;columns:2;column-gap:20px;font-size:14px}
+.all li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;break-inside:avoid;font-variant-numeric:tabular-nums}
+.all li.mine{font-weight:600;color:var(--turf)}
+.all li span:last-child{color:var(--muted)}
+
+/* Scorecard */
+.total{font-family:var(--display);font-weight:800;font-size:clamp(72px,26vw,128px);line-height:.86;font-variant-numeric:tabular-nums}
+.total small{font-size:.3em;letter-spacing:.06em;color:var(--muted);margin-left:6px}
+.card{border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.card .h{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px}
+.card .h + .h{border-top:1px solid var(--line)}
+.card .n{font-family:var(--display);font-weight:800;font-size:20px;color:var(--muted)}
+.card .w{min-width:0}
+.card .w small{display:block;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.card .w div{overflow-wrap:anywhere;font-weight:500}
+.card .y{font-family:var(--display);font-weight:800;font-size:24px;font-variant-numeric:tabular-nums}
+.card .y.ob{color:var(--ob);font-size:16px;letter-spacing:.06em}
+.note{font-size:13px;color:var(--muted)}
+@media (max-width:380px){.all{columns:1}}
+@media (prefers-reduced-motion:reduce){.ball{transition:none}.shake{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="brand"><b>Punt &amp; Pin</b><span id="dayTag"></span><button class="snd" id="sndBtn" type="button">Sound on</button><button class="acct" id="acctBtn" type="button">Sign in</button></div>
+  <div class="acctpanel" id="acctPanel" hidden><span>Your rounds, streak and best score save to your account and follow you across devices.</span><div class="acctbtns"><button class="snd" id="avEditBtn" type="button">Edit avatar</button><button class="snd" id="signOutBtn" type="button">Sign out</button></div></div>
+  <div class="avpanel" id="avPanel" hidden>
+    <div class="avtop"><span id="avPreview"></span><div><h2>Your avatar</h2><p class="note">Shown next to your name on the leaderboard.</p></div></div>
+    <div id="avRows" style="display:flex;flex-direction:column;gap:12px"></div>
+    <button class="btn" id="avSave" type="button">Save avatar</button>
+  </div>
+  <p class="note" id="acctNote" aria-live="polite" hidden></p>
+
+  <section id="home">
+   <div class="homemain">
+    <p class="label">The daily golf quiz</p>
+    <h1>Long <em>Drive</em></h1>
+    <p class="lede">Seven questions, 25 seconds each. Every question has lots of right answers. The rarer yours is, the further your drive carries.</p>
+    <div class="range" aria-hidden="true">
+      <div class="tee"></div><i style="left:28%" data-y="100"></i><i style="left:56%" data-y="200"></i><i style="left:83%" data-y="300"></i>
+      <div class="ball" style="left:89%"></div><div class="carry">321 yds</div>
+    </div>
+    <ul class="rules">
+      <li><strong>Type it</strong><span>No suggestions. Surnames count, and close spelling is matched for you.</span></li>
+      <li><strong>Miss it</strong><span>Wrong guesses cost nothing. Keep trying until the clock runs out.</span></li>
+      <li><strong>0 yds</strong><span>Run out of time and the hole is out of bounds.</span></li>
+    </ul>
+    <div id="playedBox" hidden>
+      <p><span class="label">Today's round</span><br><b id="playedTotal"></b> · next round in <span class="countdown"></span></p>
+    </div>
+    <div class="row">
+      <button class="btn" id="startBtn" type="button">Tee off</button>
+      <button class="btn ghost" id="cardBtn" type="button" hidden>View scorecard</button>
+    </div>
+    <div class="stats">
+      <div><span class="label">Streak</span><b id="stStreak">0</b></div>
+      <div><span class="label">Best round</span><b id="stBest">0</b></div>
+      <div><span class="label">Rounds</span><b id="stRounds">0</b></div>
+    </div>
+   </div>
+   <aside class="board" aria-labelledby="boardTitle">
+    <p class="label">Clubhouse leaderboard</p>
+    <h2 id="boardTitle">Today's top 10</h2>
+    <ol id="boardList" hidden></ol>
+    <p class="note" id="boardMsg">Loading today's scores…</p>
+   </aside>
+  </section>
+
+  <section id="play" hidden>
+    <div class="holehead"><span class="label" id="holeLabel"></span><div class="pips" id="pips"></div></div>
+    <div><p class="label" id="cat"></p><h2 id="prompt"></h2></div>
+    <div class="timer"><div class="track"><div class="fill" id="fill"></div></div><b id="secs">25</b></div>
+    <form id="answerForm" autocomplete="off">
+      <input type="text" id="answer" aria-label="Your answer" placeholder="Type a name" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go">
+      <button type="submit" id="hitBtn">Hit</button>
+    </form>
+    <p class="feedback" id="feedback" aria-live="polite"></p>
+    <div id="reveal" hidden style="display:flex;flex-direction:column;gap:14px">
+      <div class="verdict" id="verdict"><h2 id="vName"></h2><span class="tag" id="vTag"></span></div>
+      <div class="range"><div class="tee"></div><i style="left:28%" data-y="100"></i><i style="left:56%" data-y="200"></i><i style="left:83%" data-y="300"></i>
+        <div class="ball" id="ball"></div><div class="carry" id="carry"></div></div>
+      <p class="facts" id="facts"></p>
+      <details><summary>All answers</summary><ul class="all" id="allList"></ul></details>
+      <button class="btn" id="nextBtn" type="button">Next hole</button>
+    </div>
+  </section>
+
+  <section id="done" hidden>
+    <div><p class="label" id="doneLabel"></p><div class="total"><span id="total"></span><small>YDS</small></div></div>
+    <h2 id="rating"></h2>
+    <div class="card" id="card"></div>
+    <div class="row">
+      <button class="btn" id="shareBtn" type="button">Copy result</button>
+      <button class="btn ghost" id="homeBtn" type="button">Clubhouse</button>
+    </div>
+    <p class="note" id="shareNote">Next round in <span class="countdown"></span>. Rarity is a preset estimate of how often each answer gets picked.</p>
+  </section>
+</div>
+
+<script>
+// Each answer: [name, commonness 1-60 (higher = more obvious), extra accepted spellings]
+const Q=(cat,prompt,a)=>({cat,prompt,a});
+const SETS=[[
+ Q("Men's majors","Name a Masters champion from 2000 to 2025",[["Tiger Woods",55],["Rory McIlroy",45],["Scottie Scheffler",40],["Phil Mickelson",30],["Jon Rahm",22],["Jordan Spieth",20],["Dustin Johnson",14,["DJ"]],["Bubba Watson",12],["Sergio Garcia",12],["Adam Scott",10],["Hideki Matsuyama",9],["Patrick Reed",8],["Danny Willett",7],["Vijay Singh",4],["Zach Johnson",4],["Charl Schwartzel",3],["Angel Cabrera",2],["Trevor Immelman",2],["Mike Weir",2]]),
+ Q("Ryder Cup","Name a European Ryder Cup captain from 2002 to 2025",[["Luke Donald",45],["Padraig Harrington",20],["Colin Montgomerie",18,["Monty"]],["Nick Faldo",16],["Darren Clarke",14],["Paul McGinley",14],["Thomas Bjørn",12],["José María Olazábal",12,["Jose Maria Olazabal","Ollie"]],["Ian Woosnam",8,["Woosie"]],["Bernhard Langer",8],["Sam Torrance",5]]),
+ Q("Ryder Cup","Name a player in Europe's winning 2025 Ryder Cup team at Bethpage",[["Rory McIlroy",55],["Tommy Fleetwood",40],["Jon Rahm",35],["Shane Lowry",30],["Justin Rose",28],["Viktor Hovland",18],["Tyrrell Hatton",16],["Robert MacIntyre",16,["Bob MacIntyre","McIntyre"]],["Ludvig Åberg",14],["Matt Fitzpatrick",10,["Matthew Fitzpatrick"]],["Sepp Straka",5],["Rasmus Højgaard",4]]),
+ Q("Women's golf","Name a Women's Open champion from 2015 to 2025",[["Lydia Ko",35],["Georgia Hall",30],["Lilia Vu",12],["Inbee Park",12],["Ashleigh Buhai",9],["Hinako Shibuno",8],["Ariya Jutanugarn",8],["Miyu Yamashita",8],["Anna Nordqvist",7],["Sophia Popov",6],["In-Kyung Kim",3,["I.K. Kim","IK Kim","In Kyung Kim"]]]),
+ Q("PGA Tour","Name a FedEx Cup champion from 2007 to 2025",[["Rory McIlroy",50],["Tiger Woods",40],["Scottie Scheffler",40],["Tommy Fleetwood",30],["Jordan Spieth",14],["Viktor Hovland",14],["Justin Thomas",12],["Patrick Cantlay",10],["Dustin Johnson",10,["DJ"]],["Justin Rose",9],["Henrik Stenson",7],["Jim Furyk",5],["Billy Horschel",5],["Vijay Singh",4],["Brandt Snedeker",3],["Bill Haas",2]]),
+ Q("World rankings","Name a men's world number one from 2010 to 2025",[["Scottie Scheffler",55],["Rory McIlroy",50],["Tiger Woods",45],["Dustin Johnson",25,["DJ"]],["Jon Rahm",25],["Jordan Spieth",18],["Brooks Koepka",16],["Jason Day",14],["Justin Thomas",10],["Justin Rose",10],["Luke Donald",8],["Lee Westwood",8],["Adam Scott",6],["Martin Kaymer",4]]),
+ Q("The Open","Name a course that hosted The Open from 2010 to 2025",[["St Andrews",60,["Old Course","Saint Andrews","The Old Course"]],["Royal Portrush",30],["Royal Troon",22],["Royal Liverpool",16,["Hoylake"]],["Royal Birkdale",16],["Carnoustie",14],["Royal St George's",9,["Sandwich","St Georges","Royal St Georges"]],["Muirfield",7],["Royal Lytham & St Annes",6,["Lytham","Royal Lytham","Lytham St Annes"]]])
+],[
+ Q("Men's majors","Name an Open champion from 2000 to 2025",[["Tiger Woods",50],["Rory McIlroy",35],["Scottie Scheffler",30],["Shane Lowry",28],["Xander Schauffele",16],["Jordan Spieth",14],["Phil Mickelson",14],["Padraig Harrington",12],["Ernie Els",10],["Cameron Smith",10,["Cam Smith"]],["Collin Morikawa",9],["Darren Clarke",9],["Henrik Stenson",8],["Francesco Molinari",8],["Brian Harman",6],["Louis Oosthuizen",5],["Zach Johnson",4],["Stewart Cink",4],["David Duval",3],["Ben Curtis",2],["Todd Hamilton",2]]),
+ Q("Men's majors","Name a PGA Championship winner from 2000 to 2025",[["Tiger Woods",45],["Brooks Koepka",40],["Rory McIlroy",35],["Scottie Scheffler",30],["Phil Mickelson",25],["Xander Schauffele",16],["Justin Thomas",16],["Collin Morikawa",10],["Jason Day",9],["Padraig Harrington",7],["Keegan Bradley",7],["Martin Kaymer",6],["Vijay Singh",5],["Jimmy Walker",3],["Jason Dufner",3],["Y.E. Yang",3,["Yang Yong-eun","Yong-eun Yang"]],["David Toms",2],["Rich Beem",2],["Shaun Micheel",1]]),
+ Q("Ryder Cup","Name a USA Ryder Cup captain from 2002 to 2025",[["Keegan Bradley",45],["Zach Johnson",25],["Steve Stricker",16],["Jim Furyk",12],["Davis Love III",12,["Davis Love","Love"]],["Tom Watson",12],["Paul Azinger",9],["Corey Pavin",5],["Tom Lehman",5],["Hal Sutton",5],["Curtis Strange",4]]),
+ Q("Women's golf","Name a US Women's Open champion from 2015 to 2025",[["Yuka Saso",25],["Minjee Lee",20],["Maja Stark",14],["Allisen Corpuz",10],["Ariya Jutanugarn",10],["In Gee Chun",6],["Sung Hyun Park",6],["Brittany Lang",4],["Jeongeun Lee6",4,["Jeongeun Lee","Lee","Lee6"]],["A Lim Kim",4]]),
+ Q("PGA Tour","Name a Players Championship winner from 2010 to 2025",[["Scottie Scheffler",50],["Rory McIlroy",45],["Tiger Woods",22],["Cameron Smith",14,["Cam Smith"]],["Justin Thomas",14],["Rickie Fowler",14],["Jason Day",10],["Martin Kaymer",5],["Webb Simpson",5],["Matt Kuchar",5],["Si Woo Kim",4],["K.J. Choi",2],["Tim Clark",2]]),
+ Q("Men's majors","Name a man who has completed the career Grand Slam",[["Tiger Woods",60],["Rory McIlroy",50],["Jack Nicklaus",40],["Gary Player",20],["Ben Hogan",12],["Gene Sarazen",5]]),
+ Q("Ryder Cup","Name a player in Europe's 2012 Miracle at Medinah team",[["Ian Poulter",50],["Rory McIlroy",45],["Justin Rose",30],["Sergio Garcia",25],["Lee Westwood",22],["Luke Donald",16],["Martin Kaymer",16],["Graeme McDowell",14],["Francesco Molinari",10],["Paul Lawrie",5],["Nicolas Colsaerts",5],["Peter Hanson",2]])
+],[
+ Q("Men's majors","Name a US Open champion from 2000 to 2025",[["Tiger Woods",45],["Bryson DeChambeau",35],["Rory McIlroy",28],["Brooks Koepka",25],["Jon Rahm",18],["Matt Fitzpatrick",16,["Matthew Fitzpatrick"]],["Jordan Spieth",14],["Justin Rose",14],["Dustin Johnson",12,["DJ"]],["J.J. Spaun",10],["Wyndham Clark",9],["Graeme McDowell",8],["Gary Woodland",6],["Martin Kaymer",5],["Webb Simpson",4],["Jim Furyk",4],["Retief Goosen",4],["Lucas Glover",3],["Angel Cabrera",3],["Geoff Ogilvy",2],["Michael Campbell",2]]),
+ Q("Ryder Cup","Name a player in the USA's 2025 Ryder Cup team at Bethpage",[["Scottie Scheffler",60],["Bryson DeChambeau",40],["Xander Schauffele",28],["Justin Thomas",22],["Collin Morikawa",16],["Patrick Cantlay",16],["Cameron Young",14,["Cam Young"]],["J.J. Spaun",9],["Sam Burns",7],["Harris English",5],["Russell Henley",5],["Ben Griffin",4]]),
+ Q("Women's golf","Name a European Solheim Cup captain from 2011 to 2024",[["Suzann Pettersen",40],["Catriona Matthew",30],["Annika Sörenstam",30],["Alison Nicholas",6],["Carin Koch",4],["Liselotte Neumann",3]]),
+ Q("Women's golf","Name a Chevron Championship winner from 2015 to 2025 (formerly the ANA Inspiration)",[["Nelly Korda",50],["Lydia Ko",25],["Lilia Vu",12],["Jennifer Kupcho",8],["Mao Saigo",7],["Jin Young Ko",7],["Patty Tavatanakit",6],["So Yeon Ryu",4],["Brittany Lincicome",3],["Pernilla Lindberg",3],["Mirim Lee",2]]),
+ Q("Olympics","Name a men's Olympic golf medallist from 2016 to 2024",[["Scottie Scheffler",45],["Justin Rose",35],["Xander Schauffele",30],["Tommy Fleetwood",30],["Hideki Matsuyama",14],["Henrik Stenson",10],["Matt Kuchar",5],["Rory Sabbatini",3],["C.T. Pan",3]]),
+ Q("Men's majors","Name a man who has won the Masters three or more times",[["Tiger Woods",60],["Jack Nicklaus",50],["Phil Mickelson",30],["Arnold Palmer",22],["Gary Player",16],["Nick Faldo",16],["Sam Snead",5],["Jimmy Demaret",2]]),
+ Q("DP World Tour","Name a BMW PGA Championship winner at Wentworth from 2014 to 2025",[["Rory McIlroy",40],["Shane Lowry",22],["Tyrrell Hatton",16],["Billy Horschel",16],["Alex Norén",14,["Alexander Noren"]],["Ryan Fox",8],["Francesco Molinari",8],["Danny Willett",7],["Chris Wood",4],["Byeong Hun An",3,["Ben An","An Byeong-hun"]]])
+]];
+
+const LIMIT=25, MATCH=0.75, KEY='pp-long-drive-v1';
+const $=id=>document.getElementById(id);
+const yards=p=>Math.round(350-Math.min(p,60)/60*250);
+const tier=p=>p>=30?'Common':p>=12?'Solid':p>=5?'Rare':'Deep cut';
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/ø/g,'o').replace(/æ/g,'ae').replace(/ß/g,'ss').replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let prev=[];for(let j=0;j<=n;j++)prev[j]=j;
+  for(let i=1;i<=m;i++){const cur=[i];for(let j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=cur}return prev[n]}
+const sim=(a,b)=>1-lev(a,b)/Math.max(a.length,b.length);
+const FIRST=['Tiger','Rory','Scottie','Bubba','Bryson','Xander','Sergio','Annika'];
+function forms(ans){const out=[ans[0]],t=ans[0].split(' ');if(t.length>1)out.push(t[t.length-1]);if(FIRST.includes(t[0]))out.push(t[0]);return out.concat(ans[2]||[]).map(norm)}
+// Returns {type:'hit',ans} | {type:'ambig'} | {type:'miss'}
+function match(q,raw){const v=norm(raw);if(v.length<2)return{type:'miss'};
+  const scored=q.a.map(ans=>({ans,s:Math.max(...forms(ans).map(f=>sim(v,f)))})).filter(x=>x.s>=MATCH).sort((x,y)=>y.s-x.s);
+  if(!scored.length)return{type:'miss'};
+  if(scored.length>1&&scored[0].s-scored[1].s<0.001)return{type:'ambig'};
+  return{type:'hit',ans:scored[0].ans}}
+
+// Day and storage
+const EPOCH=new Date(2026,10,10);
+function dayNum(){const n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-EPOCH)/864e5)+1}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+let store=load();store.days=store.days||{};
+
+// Sound: synthesised in the browser, starts on the first tap
+let AC=null,hitBuf=null;
+const HIT_B64="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VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tSxOsDC8StLkekbwFfEiMI9Iz4VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+1LE0oPMOKKJDOGCwAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==";
+function loadHit(c){if(hitBuf!==null)return;hitBuf=false;try{const s=atob(HIT_B64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);
+  c.decodeAudioData(u.buffer,b=>{hitBuf=b},()=>{})}catch(e){}}
+function playHit(){const c=ac();if(!c||!hitBuf)return false;const s=c.createBufferSource(),g=c.createGain();s.buffer=hitBuf;g.gain.value=.5;s.connect(g);g.connect(c.destination);s.start();return true}
+function ac(){if(store.mute)return null;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();loadHit(AC);return AC}catch(e){return null}}
+function tone(f,t0,d,type,vol,f2){const c=ac();if(!c)return;const o=c.createOscillator(),g=c.createGain(),t=c.currentTime+t0;
+  o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.02)}
+function noise(t0,d,vol,freq){const c=ac();if(!c)return;const n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),ch=b.getChannelData(0);
+  for(let i=0;i<n;i++)ch[i]=(Math.random()*2-1)*(1-i/n);
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=freq;g.gain.value=vol;
+  s.connect(f);f.connect(g);g.connect(c.destination);s.start(c.currentTime+t0)}
+function swish(t0,d,vol){const c=ac();if(!c)return;const n=Math.floor(c.sampleRate*d),b=c.createBuffer(1,n,c.sampleRate),ch=b.getChannelData(0);
+  for(let i=0;i<n;i++)ch[i]=Math.random()*2-1;
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(),t=c.currentTime+t0;s.buffer=b;f.type='bandpass';f.Q.value=.8;
+  f.frequency.setValueAtTime(4200,t);f.frequency.exponentialRampToValueAtTime(600,t+d);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.04);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  s.connect(f);f.connect(g);g.connect(c.destination);s.start(t)}
+const SFX={
+  tee(){tone(520,0,.09,'triangle',.15);tone(780,.09,.16,'triangle',.15)},
+  hit(y){if(!playHit()){noise(0,.025,.9,5000);tone(3400,0,.09,'sine',.18,3100);tone(4700,0,.05,'sine',.08);tone(160,0,.07,'sine',.35,70);swish(.02,.9,.14)}const t=1.1;
+    if(y>=300){tone(784,t,.12,'triangle',.14);tone(1047,t+.1,.12,'triangle',.14);tone(1319,t+.2,.3,'triangle',.14)}
+    else if(y>=200){tone(659,t,.12,'triangle',.13);tone(880,t+.1,.25,'triangle',.13)}
+    else tone(523,t,.2,'triangle',.12)},
+  miss(){tone(170,0,.14,'square',.07,120)},
+  tick(){tone(1000,0,.04,'square',.05)},
+  ob(){tone(300,0,.25,'sawtooth',.09,150);tone(150,.25,.4,'sawtooth',.09,80)},
+  done(total){(total>=1000?[523,659,784,1047]:[523,659,784]).forEach((f,k)=>tone(f,k*.13,k===3?.5:.16,'triangle',.15))}
+};
+function sndLabel(){const b=$('sndBtn');b.textContent=store.mute?'Sound off':'Sound on';b.setAttribute('aria-pressed',String(!store.mute))}
+$('sndBtn').addEventListener('click',()=>{store.mute=!store.mute;save(store);sndLabel();if(!store.mute)SFX.tick()});sndLabel();
+
+const S={day:dayNum(),qs:null,i:0,holes:[],practice:false,answered:false,end:0,tick:null};
+S.qs=SETS[((S.day-1)%SETS.length+SETS.length)%SETS.length];
+
+function show(id){['home','play','done'].forEach(v=>$(v).hidden=v!==id);window.scrollTo(0,0)}
+function renderHome(){
+  $('dayTag').textContent='Round '+S.day+' · '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const today=store.days[S.day];
+  $('playedBox').hidden=!today;$('cardBtn').hidden=!today;
+  $('startBtn').textContent=today?'Practice round':'Tee off';
+  $('startBtn').classList.toggle('ghost',!!today);
+  if(today)$('playedTotal').textContent=today.total.toLocaleString('en-GB')+' yds';
+  $('stStreak').textContent=store.streak||0;$('stBest').textContent=(store.best||0).toLocaleString('en-GB');
+  $('stRounds').textContent=Object.keys(store.days).length;
+  show('home')}
+
+function start(){SFX.tee();S.skipped=false;S.i=0;S.holes=[];S.practice=!!store.days[S.day];show('play');hole()}
+function pips(){const el=$('pips');el.textContent='';for(let k=0;k<7;k++){const s=document.createElement('span');
+  if(k<S.holes.length)s.className=S.holes[k].y?'done':'ob';else if(k===S.i)s.className='now';el.appendChild(s)}}
+function hole(){const q=S.qs[S.i];S.answered=false;
+  $('holeLabel').textContent='Hole '+(S.i+1)+' of 7'+(S.practice?' · practice':'');
+  $('cat').textContent=q.cat;$('prompt').textContent=q.prompt;
+  $('feedback').textContent='';$('reveal').hidden=true;
+  const inp=$('answer');inp.disabled=false;inp.value='';$('hitBtn').disabled=false;
+  $('ball').className='ball';$('ball').style.left='2%';
+  pips();inp.focus();
+  S.end=performance.now()+LIMIT*1000;clearInterval(S.tick);S.tick=setInterval(clock,100);clock()}
+function clock(){const left=Math.max(0,S.end-performance.now());
+  const sec=Math.ceil(left/1000);$('secs').textContent=sec;
+  if(sec!==S.lastSec&&sec>0&&sec<=5&&!S.answered)SFX.tick();S.lastSec=sec;
+  const f=$('fill');f.style.transform='scaleX('+left/(LIMIT*1000)+')';f.classList.toggle('low',left<6000);
+  if(left<=0)finish(null)}
+function finish(ans){if(S.answered)return;S.answered=true;clearInterval(S.tick);
+  const q=S.qs[S.i],y=ans?yards(ans[1]):0;
+  S.holes.push({cat:q.cat,name:ans?ans[0]:null,y});
+  $('answer').disabled=true;$('hitBtn').disabled=true;$('answer').blur();$('feedback').textContent='';
+  if(ans)SFX.hit(y);else SFX.ob();
+  $('verdict').classList.toggle('miss',!ans);
+  $('vName').textContent=ans?ans[0]:'Out of bounds';
+  $('vTag').textContent=ans?tier(ans[1]):'Time ran out';
+  $('carry').textContent=y+' yds';
+  const sorted=q.a.slice().sort((a,b)=>a[1]-b[1]),far=sorted[0],near=sorted[sorted.length-1];
+  const facts=$('facts');facts.textContent='';
+  const add=(t,b)=>{facts.append(t);const e=document.createElement('b');e.textContent=b;facts.append(e)};
+  add('Longest drive on offer: ',far[0]+' ('+yards(far[1])+' yds)');add('. Shortest: ',near[0]+' ('+yards(near[1])+' yds)');facts.append('.');
+  const ul=$('allList');ul.textContent='';
+  sorted.forEach(a=>{const li=document.createElement('li');if(ans&&a===ans)li.className='mine';
+    const n=document.createElement('span'),v=document.createElement('span');n.textContent=a[0];v.textContent=yards(a[1]);li.append(n,v);ul.appendChild(li)});
+  $('nextBtn').textContent=S.i===6?'See scorecard':'Next hole';
+  $('reveal').hidden=false;pips();
+  const ball=$('ball');if(!ans)ball.classList.add('ob');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ball.style.left=(ans?2+y/360*96:6)+'%'}));
+  $('nextBtn').focus({preventScroll:true})}
+
+$('answerForm').addEventListener('submit',e=>{e.preventDefault();if(S.answered)return;
+  const inp=$('answer'),raw=inp.value.trim();if(!raw)return;
+  const r=match(S.qs[S.i],raw);
+  if(r.type==='hit')return finish(r.ans);
+  $('feedback').textContent=r.type==='ambig'?'More than one answer fits "'+raw+'". Add a first name.':'No match for "'+raw+'". Try again.';
+  SFX.miss();inp.classList.remove('shake');void inp.offsetWidth;inp.classList.add('shake');
+  if(r.type==='miss')inp.value='';inp.focus()});
+$('nextBtn').addEventListener('click',()=>{S.i++;if(S.i<7)hole();else complete()});
+
+function complete(){const total=S.holes.reduce((s,h)=>s+h.y,0);
+  if(!S.practice&&!S.skipped){store.days[S.day]={total,holes:S.holes};
+    store.streak=store.last===S.day-1?(store.streak||0)+1:1;store.last=S.day;store.best=Math.max(store.best||0,total);save(store);syncUp();postScore(total)}
+  SFX.done(total);scorecard({total,holes:S.holes},S.practice||S.skipped)}
+function scorecard(r,practice){
+  $('doneLabel').textContent='Round '+S.day+(practice?' · practice, not saved':' · total carry');
+  $('total').textContent=r.total.toLocaleString('en-GB');
+  $('rating').textContent=r.total>=2000?'Tour pro.':r.total>=1500?'Scratch golfer.':r.total>=1000?'Single figures.':r.total>=500?'Weekend hacker.':'Lost ball.';
+  const card=$('card');card.textContent='';
+  r.holes.forEach((h,k)=>{const row=document.createElement('div');row.className='h';
+    const n=document.createElement('span');n.className='n';n.textContent=k+1;
+    const w=document.createElement('div');w.className='w';const c=document.createElement('small');c.textContent=h.cat;
+    const a=document.createElement('div');a.textContent=h.name||'No answer';w.append(c,a);
+    const y=document.createElement('span');y.className='y'+(h.y?'':' ob');y.textContent=h.y?h.y:'OB';
+    row.append(n,w,y);card.appendChild(row)});
+  S.shareText='Punt & Pin Long Drive · Round '+S.day+'\n'+r.total.toLocaleString('en-GB')+' yds\n'+
+    r.holes.map(h=>h.y>=300?'🟩':h.y>=200?'🟨':h.y>0?'🟧':'⬛').join('');
+  $('shareBtn').textContent='Copy result';show('done')}
+
+$('shareBtn').addEventListener('click',()=>{const done=()=>{$('shareBtn').textContent='Copied'};
+  const fallback=()=>{const n=$('shareNote');n.textContent=S.shareText;n.style.whiteSpace='pre-wrap';n.style.userSelect='all';
+    const r=document.createRange();r.selectNodeContents(n);const s=getSelection();s.removeAllRanges();s.addRange(r);$('shareBtn').textContent='Select and copy below'};
+  try{navigator.clipboard.writeText(S.shareText).then(done,fallback)}catch(e){fallback()}});
+$('startBtn').addEventListener('click',start);
+$('cardBtn').addEventListener('click',()=>scorecard(store.days[S.day],false));
+$('homeBtn').addEventListener('click',renderHome);
+
+function countdown(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1),s=Math.max(0,Math.floor((m-n)/1000));
+  const t=[s/3600|0,(s%3600)/60|0,s%60].map(x=>String(x).padStart(2,'0')).join(':');
+  document.querySelectorAll('.countdown').forEach(e=>e.textContent=t)}
+// Account: rounds save to the signed-in viewer's private space, merged with this device
+let cloudRef=null,acctName='Account';
+function acctNote(t){$('acctNote').textContent=t;$('acctNote').hidden=!t}
+// Avatars: built from fixed palettes, stored as four index numbers
+const AV={bg:['#F2C230','#1E6B45','#2B6CB0','#B93A29','#6B4FA0','#12281C','#E8E2D0','#E07A2F'],
+  skin:['#F6D7BD','#E9B98F','#C98F62','#9A6540','#6B4226','#4A2E1B'],
+  cap:['#FFFFFF','#12281C','#B93A29','#2B6CB0','#F2C230','#1E6B45','#E05A9C','#E07A2F'],
+  shirt:['#FFFFFF','#12281C','#B93A29','#2B6CB0','#F2C230','#1E6B45','#E05A9C','#E07A2F']};
+const AVK=['bg','skin','cap','shirt'],AVL={bg:'Background',skin:'Skin tone',cap:'Cap',shirt:'Shirt'},AVD={bg:1,skin:1,cap:0,shirt:0};
+function avClean(a){const o={};AVK.forEach(k=>{const v=a&&a[k];o[k]=Number.isInteger(v)&&v>=0&&v<AV[k].length?v:AVD[k]});return o}
+function avSvg(a,size){a=avClean(a);const s='stroke="#000" stroke-opacity=".25" stroke-width=".6"';
+  return '<svg class="av" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" fill="'+AV.bg[a.bg]+'"/>'+
+    '<ellipse cx="20" cy="43" rx="15" ry="13" fill="'+AV.shirt[a.shirt]+'" '+s+'/><rect x="17" y="25" width="6" height="6" fill="'+AV.skin[a.skin]+'"/>'+
+    '<circle cx="20" cy="19" r="8.5" fill="'+AV.skin[a.skin]+'"/><path d="M11.3 17.5a8.7 8.7 0 0 1 17.4 0z" fill="'+AV.cap[a.cap]+'" '+s+'/>'+
+    '<rect x="11" y="16.2" width="22" height="2.8" rx="1.4" fill="'+AV.cap[a.cap]+'" '+s+'/></svg>'}
+let avDraft=null;const avCache={};
+function avDraw(){$('avPreview').innerHTML=avSvg(avDraft,72);const box=$('avRows');box.textContent='';
+  AVK.forEach(k=>{const row=document.createElement('div');row.className='avrow';const l=document.createElement('span');l.className='label';l.textContent=AVL[k];
+    const sw=document.createElement('div');sw.className='sw';
+    AV[k].forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.style.background=c;b.setAttribute('aria-label',AVL[k]+' option '+(i+1));
+      b.setAttribute('aria-pressed',String(avDraft[k]===i));b.addEventListener('click',()=>{avDraft[k]=i;avDraw()});sw.appendChild(b)});
+    row.append(l,sw);box.appendChild(row)})}
+function openAv(){avDraft=avClean(store.av);avDraw();$('acctPanel').hidden=true;$('avPanel').hidden=false}
+$('avEditBtn').addEventListener('click',openAv);
+$('avSave').addEventListener('click',()=>{store.av=avDraft;save(store);$('avPanel').hidden=true;acctLabel();
+  if(UID)avCache[UID]=avDraft;renderBoard(lastRows);
+  if(DB&&UID&&cloudRef)DB.doc('players/'+UID).set({av:avDraft}).then(()=>acctNote('Avatar saved.'),()=>acctNote('Could not save your avatar just now. Try again in a moment.'))});
+function acctLabel(){const b=$('acctBtn');b.textContent='';if(!cloudRef){b.textContent='Sign in';return}
+  b.insertAdjacentHTML('beforeend',avSvg(store.av,18));const s=document.createElement('span');s.textContent=acctName;b.appendChild(s)}
+function syncUp(){if(!cloudRef)return;
+  cloudRef.set({days:store.days,streak:store.streak||0,last:store.last||0,best:store.best||0})
+    .catch(()=>acctNote('Could not save to your account just now. This round is still saved on this device.'))}
+function merge(c){if(!c)return;store.days=Object.assign({},store.days,c.days||{});store.best=Math.max(store.best||0,c.best||0);
+  const cl=c.last||0,ll=store.last||0;if(cl>ll||(cl===ll&&(c.streak||0)>(store.streak||0))){store.last=cl;store.streak=c.streak||0}}
+async function signIn(quiet){const b=$('acctBtn');b.disabled=true;b.textContent='Signing in…';
+  try{if(!window.claude||!window.claude.use)throw 0;
+    const [user,db]=await Promise.all([window.claude.use('user'),window.claude.use('db')]);
+    const id=user?await user.id():null;if(!db||!id)throw 0;
+    const ref=db.collection('data/users/'+id).doc('long-drive'),snap=await ref.get();
+    merge(snap.exists?snap.data():null);cloudRef=ref;DB=db;UID=id;store.acct=true;save(store);
+    if(store.days[S.day])postScore(store.days[S.day].total);
+    acctName=(await user.me()).name||'Account';
+    try{const pv=await db.doc('players/'+id).get(),d=pv.exists?pv.data():null;
+      if(d&&d.av){store.av=avClean(d.av);save(store)}else if(store.av)db.doc('players/'+id).set({av:avClean(store.av)}).catch(()=>{});
+      if(store.av)avCache[id]=store.av}catch(e){}
+    if(!quiet&&!store.av)openAv();
+    syncUp();acctNote(quiet?'':'Signed in. Your rounds now save to your account.');if(!$('home').hidden)renderHome();
+  }catch(e){cloudRef=null;if(!quiet)acctNote("Sign-in isn't available here. Your rounds are still saved on this device.")}
+  b.disabled=false;acctLabel()}
+$('acctBtn').addEventListener('click',()=>{if(cloudRef)$('acctPanel').hidden=!$('acctPanel').hidden;else signIn(false)});
+$('signOutBtn').addEventListener('click',()=>{cloudRef=null;store.acct=false;save(store);$('acctPanel').hidden=true;$('avPanel').hidden=true;acctLabel();
+  acctNote('Signed out. Rounds save on this device only.')});
+if(store.acct)signIn(true);
+
+// Clubhouse leaderboard: one score per signed-in player per day, top 10 shown
+let DB=null,UID=null,USER=null,boardSeq=0,lastRows=[];
+async function avFor(id){if(id in avCache)return;avCache[id]=null;try{const d=await DB.doc('players/'+id).get();if(d.exists&&d.data().av)avCache[id]=avClean(d.data().av)}catch(e){}}
+function boardMsg(t){$('boardMsg').textContent=t;$('boardMsg').hidden=!t}
+function postScore(total){if(!DB||!UID||!cloudRef)return;DB.doc('scores/'+UID).set({day:S.day,total}).catch(()=>{})}
+async function renderBoard(rows){const seq=++boardSeq;lastRows=rows;
+  rows=rows.filter(r=>Number.isFinite(r.total)&&r.total>0&&r.total<=2450).sort((a,b)=>b.total-a.total).slice(0,10);
+  let ps={};try{if(USER&&rows.length)ps=await USER.profiles(rows.map(r=>r.id))}catch(e){}
+  if(DB)await Promise.all(rows.map(r=>avFor(r.id)));
+  if(seq!==boardSeq)return;
+  const ol=$('boardList');ol.textContent='';
+  rows.forEach((r,k)=>{const li=document.createElement('li');if(r.id===UID)li.className='me';
+    const a=document.createElement('span'),b=document.createElement('span'),c=document.createElement('span');
+    a.className='r';a.textContent=k+1;b.className='p';b.textContent=((ps[r.id]&&ps[r.id].name)||'Player')+(r.id===UID?' (you)':'');
+    c.className='s';c.textContent=r.total.toLocaleString('en-GB');li.append(a,b,c);
+    a.insertAdjacentHTML('afterend',avSvg(r.id===UID&&store.av?store.av:avCache[r.id],26));ol.appendChild(li)});
+  ol.hidden=!rows.length;
+  boardMsg(rows.length?'Sign in and finish a round to post your score.':'No scores posted yet today. Sign in and finish a round to go top.')}
+async function initBoard(){
+  try{if(!window.claude||!window.claude.use)throw 0;
+    const db=await window.claude.use('db');if(!db)throw 0;
+    USER=await window.claude.use('user');if(USER&&!UID)UID=await USER.id();DB=DB||db;
+    const timer=setTimeout(()=>boardMsg("Couldn't load today's scores. Reopen the game to try again."),10000);
+    db.collection('scores').where('day','==',S.day).limit(200).onSnapshot(
+      snap=>{clearTimeout(timer);renderBoard(snap.docs.map(d=>({id:d.id,total:(d.data()||{}).total})))},
+      ()=>{clearTimeout(timer);boardMsg("Couldn't load today's scores. Reopen the game to try again.")});
+  }catch(e){boardMsg("Today's scores show here for signed-in players.")}}
+initBoard();
+
+setInterval(countdown,1000);countdown();renderHome();
+</script>
+</body>
+</html>
